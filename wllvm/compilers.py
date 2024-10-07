@@ -357,6 +357,7 @@ def linkFiles(builder, objectFiles):
     cc.extend(objectFiles)
     cc.extend(af.objectFiles)
     cc.extend(af.linkArgs)
+    cc.extend("--target=riscv64-unknown-linux-gnu -mcmodel=medany -march=rv64g --sysroot=/home/kir/riscv/sysroot --gcc-toolchain=/home/kir/riscv".split(" "))
     cc.extend(['-o', outputFile])
     proc = Popen(cc)
     rc = proc.wait()
