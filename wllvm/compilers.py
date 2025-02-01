@@ -350,6 +350,16 @@ def buildAndAttachBitcode(builder, af):
 
     sys.exit(0)
 
+riscv_args = []
+if os.getenv('VLG_ARCH_RISCV') is not None:
+    riscv_toolchain_path = "/opt/riscv"
+    if os.getenv("VLG_RISCV_TOOLCHAIN_PATH") is not None:
+        riscv_toolchain_path = os.getenv("VLG_RISCV_TOOLCHAIN_PATH")
+
+    riscv_argstring = f"--target=riscv64-unknown-linux-gnu -mcmodel=medany -march=rv64g --sysroot={riscv_toolchain_path}/sysroot --gcc-toolchain={riscv_toolchain_path}"
+
+    riscv_args = riscv_argstring.split(" ")
+
 def linkFiles(builder, objectFiles):
     af = builder.getBitcodeArglistFilter()
     outputFile = af.getOutputFilename()
@@ -357,7 +367,7 @@ def linkFiles(builder, objectFiles):
     cc.extend(objectFiles)
     cc.extend(af.objectFiles)
     cc.extend(af.linkArgs)
-    cc.extend("--target=riscv64-unknown-linux-gnu -mcmodel=medany -march=rv64g --sysroot=/home/kir/riscv/sysroot --gcc-toolchain=/home/kir/riscv".split(" "))
+    cc.extend(riscv_args)
     cc.extend(['-o', outputFile])
     proc = Popen(cc)
     rc = proc.wait()
@@ -370,7 +380,7 @@ def buildBitcodeFile(builder, srcFile, bcFile):
     af = builder.getBitcodeArglistFilter()
     bcc = builder.getBitcodeCompiler()
     bcc.extend(af.compileArgs)
-    bcc.extend("--target=riscv64-unknown-linux-gnu -mcmodel=medany -march=rv64g --sysroot=/home/kir/riscv/sysroot --gcc-toolchain=/home/kir/riscv".split(" "))
+    bcc.extend(riscv_args)
     bcc.extend(['-c', srcFile])
     bcc.extend(['-o', bcFile])
     _logger.debug('buildBitcodeFile: %s', bcc)
@@ -384,7 +394,7 @@ def buildObjectFile(builder, srcFile, objFile):
     af = builder.getBitcodeArglistFilter()
     cc = builder.getCompiler()
     cc.extend(af.compileArgs)
-    cc.extend("--target=riscv64-unknown-linux-gnu -mcmodel=medany -march=rv64g --sysroot=/home/kir/riscv/sysroot --gcc-toolchain=/home/kir/riscv".split(" "))
+    cc.extend(riscv_args)
     cc.append(srcFile)
     cc.extend(['-c', '-o', objFile])
     _logger.debug('buildObjectFile: %s', cc)
