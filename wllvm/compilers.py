@@ -360,6 +360,10 @@ if os.getenv('VLG_ARCH_RISCV') is not None:
 
     riscv_args = riscv_argstring.split(" ")
 
+    print(f"\n\nWLLVM: RUNNING RISCV WITH ARGSTRING: {riscv_argstring}\n\n")
+else:
+    print("\n\nWLLVM: NOT RUNNING RISCV\n\n")
+
 def linkFiles(builder, objectFiles):
     af = builder.getBitcodeArglistFilter()
     outputFile = af.getOutputFilename()
