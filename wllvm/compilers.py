@@ -373,6 +373,7 @@ def linkFiles(builder, objectFiles):
     cc.extend(af.linkArgs)
     cc.extend(riscv_args)
     cc.extend(['-o', outputFile])
+    print(cc)
     proc = Popen(cc)
     rc = proc.wait()
     if rc != 0:
@@ -388,6 +389,7 @@ def buildBitcodeFile(builder, srcFile, bcFile):
     bcc.extend(['-c', srcFile])
     bcc.extend(['-o', bcFile])
     _logger.debug('buildBitcodeFile: %s', bcc)
+    print(bcc)
     proc = Popen(bcc)
     rc = proc.wait()
     if rc != 0:
@@ -402,6 +404,7 @@ def buildObjectFile(builder, srcFile, objFile):
     cc.append(srcFile)
     cc.extend(['-c', '-o', objFile])
     _logger.debug('buildObjectFile: %s', cc)
+    print(cc)
     proc = Popen(cc)
     rc = proc.wait()
     if rc != 0:
