@@ -294,9 +294,25 @@ def getBuilder(cmd, mode):
     _logger.critical(errorMsg, compilerEnv, str(cstring))
     raise Exception(errorMsg)
 
+riscv_args = []
+if os.getenv('VLG_ARCH_RISCV') is not None:
+    riscv_toolchain_path = "/opt/riscv"
+    if os.getenv("VLG_RISCV_TOOLCHAIN_PATH") is not None:
+        riscv_toolchain_path = os.getenv("VLG_RISCV_TOOLCHAIN_PATH")
+
+    riscv_argstring = f"--target=riscv64-unknown-linux-gnu -mcmodel=medany -march=rv64g --sysroot={riscv_toolchain_path}/sysroot --gcc-toolchain={riscv_toolchain_path}"
+
+    riscv_args = riscv_argstring.split(" ")
+
+    print(f"\n\nWLLVM: RUNNING RISCV WITH ARGSTRING: {riscv_argstring}\n\n")
+else:
+    print("\n\nWLLVM: NOT RUNNING RISCV\n\n")
+
 def buildObject(builder):
     objCompiler = builder.getCompiler()
     objCompiler.extend(builder.getCommand())
+    objCompiler.extend(riscv_args)
+    print("buildObject: " + str(objCompiler))
     proc = Popen(objCompiler)
     rc = proc.wait()
     _logger.debug('buildObject rc = %d', rc)
@@ -350,20 +366,6 @@ def buildAndAttachBitcode(builder, af):
 
     sys.exit(0)
 
-riscv_args = []
-if os.getenv('VLG_ARCH_RISCV') is not None:
-    riscv_toolchain_path = "/opt/riscv"
-    if os.getenv("VLG_RISCV_TOOLCHAIN_PATH") is not None:
-        riscv_toolchain_path = os.getenv("VLG_RISCV_TOOLCHAIN_PATH")
-
-    riscv_argstring = f"--target=riscv64-unknown-linux-gnu -mcmodel=medany -march=rv64g --sysroot={riscv_toolchain_path}/sysroot --gcc-toolchain={riscv_toolchain_path}"
-
-    riscv_args = riscv_argstring.split(" ")
-
-    print(f"\n\nWLLVM: RUNNING RISCV WITH ARGSTRING: {riscv_argstring}\n\n")
-else:
-    print("\n\nWLLVM: NOT RUNNING RISCV\n\n")
-
 def linkFiles(builder, objectFiles):
     af = builder.getBitcodeArglistFilter()
     outputFile = af.getOutputFilename()
@@ -373,7 +375,7 @@ def linkFiles(builder, objectFiles):
     cc.extend(af.linkArgs)
     cc.extend(riscv_args)
     cc.extend(['-o', outputFile])
-    print(cc)
+    print("linkFiles: " + str(cc))
     proc = Popen(cc)
     rc = proc.wait()
     if rc != 0:
@@ -389,6 +391,7 @@ def buildBitcodeFile(builder, srcFile, bcFile):
     bcc.extend(['-c', srcFile])
     bcc.extend(['-o', bcFile])
     _logger.debug('buildBitcodeFile: %s', bcc)
+    print("buildBitcodeFile: " + str(bcc))
     print(bcc)
     proc = Popen(bcc)
     rc = proc.wait()
@@ -403,6 +406,7 @@ def buildObjectFile(builder, srcFile, objFile):
     cc.extend(riscv_args)
     cc.append(srcFile)
     cc.extend(['-c', '-o', objFile])
+    print("buildObjectFile: " + str(cc))
     _logger.debug('buildObjectFile: %s', cc)
     print(cc)
     proc = Popen(cc)
